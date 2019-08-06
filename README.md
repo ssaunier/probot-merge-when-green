@@ -31,7 +31,7 @@ requiredStatuses:
 
 By default, Merge when green will only require the `cicleci` and `travis-ci` checks.
 
-Merge when green also allows you to ensure that all requested reviews have approved the pull request. Just add the 
+Merge when green also allows you to ensure that all requested reviews have approved the pull request. Just add the
 following to your `.github/merge-when-green.yml`:
 
 ```yaml
@@ -72,3 +72,4 @@ For more, check out the [Contributing Guide](CONTRIBUTING.md).
 ## License
 
 [ISC](LICENSE) © 2018 Pablo Cantero <pablohstc@gmail.com> (https://github.com/phstc/probot-merge-when-green)
+
