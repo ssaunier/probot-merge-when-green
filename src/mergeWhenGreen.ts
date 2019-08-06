@@ -104,7 +104,19 @@ const requestedReviewsComplete = async (context: Context, pr: PullType): Promise
   return requestedReviews.users.length === 0 && requestedReviews.teams.length === 0
 }
 
-const mergeAndDeleteBranch = async (context: Context, pr: PullType): Promise<void> => {
+let mergeAndDeleteBranch = async (context: Context, pr: PullType): Promise<void> => {
+  const result = await context.github.pulls.merge(
+    context.repo({ pull_number: pr.number })
+  )
+
+  if (!result.data.merged) return
+
+  await context.github.git.deleteRef(
+    context.repo({ ref: `heads/${pr.head.ref}` })
+  )
+}
+
+mergeAndDeleteBranch = async (context: Context, pr: PullType): Promise<void> => {
   const result = await context.github.pulls.merge(
     context.repo({ pull_number: pr.number })
   )
