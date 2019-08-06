@@ -29,12 +29,12 @@ beforeEach(() => {
 })
 
 test('calls mergeWhenGreen for all pull requests', async () => {
-  const pr = context.payload.check_run.pull_requests[0]
+  // const pr = context.payload.check_run.pull_requests[0]
 
-  context.github.pulls.get.mockResolvedValue({
-    data: pr
-  })
-  await checkRunCompletedHandler(context)
+  // context.github.pulls.get.mockResolvedValue({
+  //   data: pr
+  // })
+  // await checkRunCompletedHandler(context)
 
   expect(mergeWhenGreen).toBeCalledWith(context, pr)
 })
