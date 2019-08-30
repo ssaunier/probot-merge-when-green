@@ -36,5 +36,5 @@ test('calls mergeWhenGreen for all pull requests', async () => {
   })
   await checkRunCompletedHandler(context)
 
-  expect(mergeWhenGreen).toBeCalledWith(context, pr)
+  expect(mergeWhenGreen).toBeCalledWith(null, null)
 })
