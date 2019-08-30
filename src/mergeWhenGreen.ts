@@ -62,9 +62,9 @@ const isEveryCheckSuccessful = async (context: Context, pr: PullType): Promise<b
 }
 
 const isEveryStatusSuccessful = async (context: Context, pr: PullType): Promise<boolean> => {
-  const statuses = (await context.github.repos.listStatusesForRef(
+  const statuses = (await context.github.repos.getCombinedStatusForRef(
     context.repo({ ref: pr.head.ref })
-  )).data
+  )).data.statuses
 
   const { requiredStatuses } = await getConfiguration(context)
 
@@ -72,7 +72,7 @@ const isEveryStatusSuccessful = async (context: Context, pr: PullType): Promise<
 
   const uniqMatches = new Set()
 
-  const supportedStatuses = statuses.filter((statusItem: Github.ReposListStatusesForRefResponseItem) => {
+  const supportedStatuses = statuses.filter((statusItem: Github.ReposGetCombinedStatusForRefResponseStatusesItem) => {
     const check = statusItem.context
     if (requiredStatuses.includes(check)) {
       uniqMatches.add(check)
@@ -84,7 +84,7 @@ const isEveryStatusSuccessful = async (context: Context, pr: PullType): Promise<
   if (uniqMatches.size !== requiredStatuses.length) return false
 
   return supportedStatuses.every(
-    (statusItem: Github.ReposListStatusesForRefResponseItem) =>
+    (statusItem: Github.ReposGetCombinedStatusForRefResponseStatusesItem) =>
       statusItem.state === 'success'
   )
 }

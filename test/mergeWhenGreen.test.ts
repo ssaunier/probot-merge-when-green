@@ -21,7 +21,7 @@ beforeEach(() => {
         listForRef: jest.fn()
       },
       repos: {
-        listStatusesForRef: jest.fn()
+        getCombinedStatusForRef: jest.fn()
       },
       git: {
         deleteRef: jest.fn()
@@ -44,7 +44,7 @@ test('skip when no merge label', async () => {
   await mergeWhenGreen(context, pr)
 
   expect(context.github.checks.listForRef).not.toHaveBeenCalled()
-  expect(context.github.repos.listStatusesForRef).not.toHaveBeenCalled()
+  expect(context.github.repos.getCombinedStatusForRef).not.toHaveBeenCalled()
   expect(context.github.pulls.merge).not.toHaveBeenCalled()
   expect(context.github.git.deleteRef).not.toHaveBeenCalled()
 })
@@ -66,7 +66,7 @@ test('skip when failing checks but passing statuses', async () => {
     requiredStatuses: statuses
   }
 
-  context.github.repos.listStatusesForRef.mockResolvedValue(getSuccessStatuses(statuses))
+  context.github.repos.getCombinedStatusForRef.mockResolvedValue(getSuccessStatuses(statuses))
   context.github.checks.listForRef.mockResolvedValue({
     data: {
       check_runs: [
@@ -107,7 +107,7 @@ test('skip when missing checks but passing statuses', async () => {
     requiredStatuses: statuses
   }
 
-  context.github.repos.listStatusesForRef.mockResolvedValue(getSuccessStatuses(statuses))
+  context.github.repos.getCombinedStatusForRef.mockResolvedValue(getSuccessStatuses(statuses))
   context.github.checks.listForRef.mockResolvedValue({
     data: {
       check_runs: []
@@ -143,13 +143,15 @@ test('skip when passing checks but failing statuses', async () => {
   }
 
   context.github.checks.listForRef.mockResolvedValue(getSuccessChecks(checks))
-  context.github.repos.listStatusesForRef.mockResolvedValue({
-    data: [
-      {
-        context: 'jenkins',
-        state: 'failed'
-      }
-    ]
+  context.github.repos.getCombinedStatusForRef.mockResolvedValue({
+    data: {
+      statuses: [
+        {
+          context: 'jenkins',
+          state: 'failed'
+        }
+      ]
+    }
   })
 
   context.github.pulls.merge.mockResolvedValue({
@@ -181,8 +183,8 @@ test('skip when passing checks but missing statuses', async () => {
   }
 
   context.github.checks.listForRef.mockResolvedValue(getSuccessChecks(checks))
-  context.github.repos.listStatusesForRef.mockResolvedValue({
-    data: []
+  context.github.repos.getCombinedStatusForRef.mockResolvedValue({
+    data: { statuses: [] }
   })
 
   context.github.pulls.merge.mockResolvedValue({
@@ -215,7 +217,7 @@ test('skip when not all requested users reviewers have approved', async () => {
   }
 
   context.github.checks.listForRef.mockResolvedValue(getSuccessChecks(checks))
-  context.github.repos.listStatusesForRef.mockResolvedValue(getSuccessStatuses(statuses))
+  context.github.repos.getCombinedStatusForRef.mockResolvedValue(getSuccessStatuses(statuses))
 
   context.github.pulls.listReviewRequests.mockResolvedValue({ data: { users: ['Iron Man'], teams: [] } })
 
@@ -244,7 +246,7 @@ test('skip when not all requested team reviewers have approved', async () => {
   }
 
   context.github.checks.listForRef.mockResolvedValue(getSuccessChecks(checks))
-  context.github.repos.listStatusesForRef.mockResolvedValue(getSuccessStatuses(statuses))
+  context.github.repos.getCombinedStatusForRef.mockResolvedValue(getSuccessStatuses(statuses))
 
   context.github.pulls.listReviewRequests.mockResolvedValue({ data: { users: [], teams: ['The Avengers'] } })
 
@@ -272,7 +274,7 @@ test('merge pull requests when passing checks and statuses', async () => {
   }
 
   context.github.checks.listForRef.mockResolvedValue(getSuccessChecks(checks))
-  context.github.repos.listStatusesForRef.mockResolvedValue(getSuccessStatuses(statuses))
+  context.github.repos.getCombinedStatusForRef.mockResolvedValue(getSuccessStatuses(statuses))
 
   context.github.pulls.merge.mockResolvedValue({
     data: {
@@ -305,7 +307,7 @@ test('merge pull requests when passing checks and statuses and all requested rev
   }
 
   context.github.checks.listForRef.mockResolvedValue(getSuccessChecks(checks))
-  context.github.repos.listStatusesForRef.mockResolvedValue(getSuccessStatuses(statuses))
+  context.github.repos.getCombinedStatusForRef.mockResolvedValue(getSuccessStatuses(statuses))
   context.github.pulls.listReviewRequests.mockResolvedValue({ data: { users: [], teams: [] } })
 
   context.github.pulls.merge.mockResolvedValue({
@@ -321,12 +323,14 @@ test('merge pull requests when passing checks and statuses and all requested rev
 })
 
 function getSuccessStatuses (statuses: string[]) {
-  const data = statuses.map((statusName) => {
-    return {
-      context: statusName,
-      state: 'success'
-    }
-  })
+  const data = {
+    statuses: statuses.map((statusName) => {
+      return {
+        context: statusName,
+        state: 'success'
+      }
+    })
+  }
 
   return {
     data: data
