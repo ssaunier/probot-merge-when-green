@@ -50,7 +50,7 @@ const isEveryCheckSuccessful = async (context: Context, pr: Github.PullsGetRespo
   )
 }
 
-const isEveryStatusSuccessful = async (context: Context, pr:  Github.PullsGetResponse): Promise<boolean> => {
+const isEveryStatusSuccessful = async (context: Context, pr: Github.PullsGetResponse): Promise<boolean> => {
   const statuses = (await context.github.repos.getCombinedStatusForRef(
     context.repo({ ref: pr.head.ref })
   )).data.statuses
