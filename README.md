@@ -32,14 +32,14 @@ requiredStatuses:
 By default, Merge when green will wait for [branch protection](https://help.github.com/en/articles/about-protected-branches)
 to pass and also require `circleci` and `travis-ci` before attempting to merge.
 
-Merge when green also allows you to ensure that all requested reviews have approved the pull request. Just add the 
+Merge when green also allows you to ensure that all requested reviews have approved the pull request. Just add the
 following to your `.github/merge-when-green.yml`:
 
 ```yaml
 requireApprovalFromRequestedReviewers: true
 ```
 
-You can change method that Merge when green uses to merge pull requests with the `mergeMethod` option. Valid values are 
+You can change method that Merge when green uses to merge pull requests with the `mergeMethod` option. Valid values are
 `merge`, `squash` and `rebase`, the default is `merge`.
 
 ```yaml
