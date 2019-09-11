@@ -15,7 +15,7 @@ export = (app: Application) => {
     await checkRunCompletedHandler(context)
   })
 
-  app.on('status.success', async context => {
+  app.on('status', async context => {
     await statusSuccessHandler(context)
   })
 
