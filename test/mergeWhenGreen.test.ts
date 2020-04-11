@@ -1,8 +1,8 @@
 import mergeWhenGreen from '../src/mergeWhenGreen'
 import { MERGE_LABEL } from '../src/constants'
 
-let context:any
-let mockConfiguration:any
+let context: any
+let mockConfiguration: any
 
 jest.mock('../src/configuration', () => ({
   getConfiguration: () => (mockConfiguration)
@@ -71,7 +71,7 @@ test('skip when failing checks but passing statuses', async () => {
   const pr: any = {
     number: 1,
     mergeable: true,
-    labels: [{name: MERGE_LABEL}],
+    labels: [{ name: MERGE_LABEL }],
     head: {
       ref: '3efb1d'
     }
@@ -89,7 +89,7 @@ test('skip when failing checks but passing statuses', async () => {
         {
           status: 'completed',
           conclusion: 'failed',
-          app: {owner: {login: 'circleci'}}
+          app: { owner: { login: 'circleci' } }
         }
       ]
     }
@@ -114,7 +114,7 @@ test('skip when missing checks but passing statuses', async () => {
   const pr: any = {
     number: 1,
     mergeable: true,
-    labels: [{name: MERGE_LABEL}],
+    labels: [{ name: MERGE_LABEL }],
     head: {
       ref: '3efb1d'
     }
@@ -151,7 +151,7 @@ test('skip when passing checks but failing statuses', async () => {
   const pr: any = {
     number: 1,
     mergeable: true,
-    labels: [{name: MERGE_LABEL}],
+    labels: [{ name: MERGE_LABEL }],
     head: {
       ref: '3efb1d'
     }
@@ -193,7 +193,7 @@ test('skip when passing checks but missing statuses', async () => {
   const pr: any = {
     number: 1,
     mergeable: true,
-    labels: [{name: MERGE_LABEL}],
+    labels: [{ name: MERGE_LABEL }],
     head: {
       ref: '3efb1d'
     }
@@ -227,7 +227,7 @@ test('skip when not all requested users reviewers have approved', async () => {
 
   const pr: any = {
     number: 1,
-    labels: [{name: MERGE_LABEL}],
+    labels: [{ name: MERGE_LABEL }],
     head: {
       ref: '3efb1d'
     }
@@ -256,7 +256,7 @@ test('skip when not all requested team reviewers have approved', async () => {
 
   const pr: any = {
     number: 1,
-    labels: [{name: MERGE_LABEL}],
+    labels: [{ name: MERGE_LABEL }],
     head: {
       ref: '3efb1d'
     }
@@ -286,7 +286,7 @@ test('merge pull requests when passing checks and statuses', async () => {
   const pr: any = {
     number: 1,
     mergeable: true,
-    labels: [{name: MERGE_LABEL}],
+    labels: [{ name: MERGE_LABEL }],
     head: {
       ref: '3efb1d'
     }
@@ -314,6 +314,65 @@ test('merge pull requests when passing checks and statuses', async () => {
   expect(context.github.git.deleteRef).toHaveBeenCalled()
 })
 
+test('merge pull requests when passing custom statuses', async () => {
+  const checks: string[] = []
+  const statuses = ['ci/gitlab/gitlab.com']
+
+  const pr: any = {
+    number: 1,
+    mergeable: true,
+    labels: [{ name: MERGE_LABEL }],
+    head: {
+      ref: '3efb1d'
+    }
+  }
+
+  mockConfiguration = {
+    requiredChecks: checks,
+    requiredStatuses: statuses
+  }
+
+  context.github.checks.listForRef.mockResolvedValue(getSuccessChecks(checks))
+  context.github.repos.getCombinedStatusForRef.mockResolvedValue(getSuccessStatuses(statuses))
+  context.github.pulls.merge.mockResolvedValue({ data: { merged: true } })
+
+  await mergeWhenGreen(context, pr)
+
+  expect(context.github.checks.listForRef).toHaveBeenCalled()
+  expect(context.github.repos.getCombinedStatusForRef).toHaveBeenCalled()
+  expect(context.github.pulls.merge).toHaveBeenCalled()
+  expect(context.github.git.deleteRef).toHaveBeenCalled()
+})
+
+test('skip when missing custom statuses', async () => {
+  const checks: string[] = []
+  const statuses = ['ci/gitlab/gitlab.com']
+
+  const pr: any = {
+    number: 1,
+    mergeable: true,
+    labels: [{ name: MERGE_LABEL }],
+    head: {
+      ref: '3efb1d'
+    }
+  }
+
+  mockConfiguration = {
+    requiredChecks: checks,
+    requiredStatuses: statuses
+  }
+
+  context.github.checks.listForRef.mockResolvedValue({ data: { check_runs: [] } })
+  context.github.repos.getCombinedStatusForRef.mockResolvedValue({ data: { statuses: [] } })
+  context.github.pulls.merge.mockResolvedValue({ data: { merged: true } })
+
+  await mergeWhenGreen(context, pr)
+
+  expect(context.github.repos.getCombinedStatusForRef).toHaveBeenCalled()
+  expect(context.github.pulls.merge).not.toHaveBeenCalled()
+  expect(context.github.git.deleteRef).not.toHaveBeenCalled()
+})
+
 test('merge pull requests when passing checks and statuses and all requested reviews have approved', async () => {
   const checks = ['circleci']
   const statuses = ['jenkins']
@@ -321,7 +380,7 @@ test('merge pull requests when passing checks and statuses and all requested rev
   const pr: any = {
     number: 1,
     mergeable: true,
-    labels: [{name: MERGE_LABEL}],
+    labels: [{ name: MERGE_LABEL }],
     head: {
       ref: '3efb1d'
     }
@@ -369,7 +428,7 @@ function getSuccessChecks (checks: string[]) {
     return {
       status: 'completed',
       conclusion: 'success',
-      app: {owner: {login: checkName}}
+      app: { owner: { login: checkName } }
     }
   })
 
