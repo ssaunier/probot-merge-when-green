@@ -25,6 +25,7 @@ Merge when green supports both Checks and Statuses. You can configure which ones
 requiredChecks:
   - circleci
   - travis-ci
+# - github # For custom GitHub Action check
 requiredStatuses:
   - jenkins
 ```
